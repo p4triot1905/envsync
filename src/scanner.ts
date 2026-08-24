@@ -6,12 +6,14 @@ export async function scanFiles() {
     "**/*.js",
     "**/*.jsx",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "**/*.py"
   ], {
     ignore: [
       "node_modules/**",
       "dist/**",
-      ".git/**"
+      ".git/**",
+      "coverage/**"
     ]
   })
 
@@ -21,9 +23,21 @@ export async function scanFiles() {
     const code = await fs.readFile(file, "utf8")
 
     const regex = /process\.env\.([A-Z0-9_]+)/g
+    const pythonRegex = /os\.getenv\(["']([A-Z0-9_]+)["']\)/g
+    const pythonEnvRegex = /os\.environ\[["']([A-Z0-9_]+)["']\]/g
 
-    for (const match of code.matchAll(regex)) {
-      found.add(match[1])
+    if (file.endsWith(".py")) {
+      for (const match of code.matchAll(pythonRegex)) {
+        found.add(match[1])
+      }
+
+      for (const match of code.matchAll(pythonEnvRegex)) {
+        found.add(match[1])
+      }
+    } else {
+      for (const match of code.matchAll(regex)) {
+        found.add(match[1])
+      }
     }
   }
 
